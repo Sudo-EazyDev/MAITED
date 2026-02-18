@@ -4,43 +4,280 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title> 𓆩愛𓆪 MAIL</title>
-    <meta name="description" content="𓆩愛𓆪" />
+    <title>𓆩愛𓆪 MAIL</title>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RRNF4MS3G1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-RRNF4MS3G1');
+    </script>
+
     <style>
+        :root {
+            --bg: #050507;
+            --ink: rgba(255, 255, 255, .92);
+            --dim: rgba(255, 255, 255, .62);
+            --line: rgba(255, 255, 255, .14);
+            --music: 0;
+            /* 0..1 */
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
         body {
             margin: 0;
-            background: black;
-            overflow: hidden;
-            cursor: none;
-            touch-action: manipulation;
+            background: radial-gradient(1200px 900px at 60% 20%, rgba(255, 255, 255, .06), transparent 60%),
+                radial-gradient(900px 700px at 25% 65%, rgba(255, 255, 255, .05), transparent 62%),
+                var(--bg);
+            color: var(--ink);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Courier New", monospace;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        canvas {
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-        }
-
-        .overlay {
-            position: absolute;
+        /* ===== FX CANVAS BACK + FRONT ===== */
+        canvas#fxBack {
+            position: fixed;
             inset: 0;
-            z-index: 2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            z-index: 0;
             pointer-events: none;
         }
 
-        .center-message {
-            font-family: 'Courier New', monospace;
-            color: #ffffff;
-            font-size: 6rem;
-            text-align: center;
-            opacity: 0.8;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
-            animation: pulse 3s infinite;
+        canvas#fxFront {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        .noise {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+            opacity: .08;
+            mix-blend-mode: overlay;
+        }
+
+        .wrap {
+            position: relative;
+            z-index: 2;
+            width: min(1040px, 94vw);
+            margin: 22px auto 34px;
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            position: relative;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 30px 90px rgba(0, 0, 0, .55), 0 0 55px rgba(255, 255, 255, .08);
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            background: conic-gradient(from 90deg,
+                    rgba(255, 255, 255, .45),
+                    rgba(255, 255, 255, .10),
+                    rgba(255, 255, 255, .35),
+                    rgba(255, 255, 255, .10),
+                    rgba(255, 255, 255, .45));
+            filter: blur(14px);
+            opacity: calc(.22 + (var(--music) * .18));
+            animation: spin 11s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .heroInner {
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 24px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, .02);
+        }
+
+        /* ===== contenedor SOLO de imagen + overlays ===== */
+        .heroMedia {
+            position: relative;
+            width: 100%;
+            display: block;
+        }
+
+        /* Imagen inseleccionable/indraggeable */
+        img,
+        .hero,
+        .hero * {
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        img {
+            -webkit-touch-callout: none;
+        }
+
+        .heroMedia img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transform: scale(1.02);
+            filter: contrast(1.08) brightness(.95) saturate(1.05);
+        }
+
+        /* Canvas SOLO para corazones negros encima de la imagen */
+        #heroFx {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Spotlight sobre la imagen */
+        .spotlight {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            pointer-events: none;
+            background:
+                radial-gradient(420px 320px at var(--sx, 50%) var(--sy, 35%),
+                    rgba(255, 255, 255, calc(.10 + var(--music) * .10)),
+                    rgba(255, 255, 255, .06) 32%,
+                    transparent 62%),
+                linear-gradient(180deg, rgba(0, 0, 0, .06), rgba(0, 0, 0, .72));
+        }
+
+        /* ===== AUDIO UI (desktop overlay) ===== */
+        .audioUI {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            z-index: 6;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, .16);
+            background: rgba(0, 0, 0, .35);
+            backdrop-filter: blur(10px);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .03), 0 12px 35px rgba(0, 0, 0, .45);
+            user-select: none;
+        }
+
+        .btn {
+            border: 1px solid rgba(255, 255, 255, .18);
+            background: rgba(255, 255, 255, .06);
+            color: rgba(255, 255, 255, .90);
+            padding: 9px 10px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: transform .15s ease, background .15s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .03);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, .09);
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0) scale(.99);
+        }
+
+        .vol {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, .65);
+            font-size: .86rem;
+        }
+
+        input[type="range"] {
+            width: 120px;
+            accent-color: #fff;
+        }
+
+        .wave {
+            width: 92px;
+            height: 28px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, .14);
+            background: rgba(255, 255, 255, .05);
+            overflow: hidden;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .03);
+        }
+
+        #wave {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ===== CAPTION (desktop overlay) ===== */
+        .caption {
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            bottom: 14px;
+            z-index: 7;
+            border: 1px solid rgba(255, 255, 255, .14);
+            background: rgba(0, 0, 0, .35);
+            backdrop-filter: blur(10px);
+            border-radius: 18px;
+            padding: 14px 14px 12px;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .03), 0 14px 40px rgba(0, 0, 0, .45);
+        }
+
+        .badgeRow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--dim);
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            font-size: .82rem;
+        }
+
+        .pulseDot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .78);
+            box-shadow: 0 0 18px rgba(255, 255, 255, .35);
+            animation: pulse 2.6s infinite;
         }
 
         @keyframes pulse {
@@ -48,229 +285,1192 @@
             0%,
             100% {
                 transform: scale(1);
-                opacity: 0.8;
+                opacity: .75
             }
 
             50% {
-                transform: scale(1.05);
-                opacity: 1;
+                transform: scale(1.35);
+                opacity: 1
             }
         }
 
-        @media (max-width: 768px) {
-            .center-message {
-                font-size: 3rem;
-            }
+        .chips {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
-        .heart-cursor {
+        .chip {
+            border: 1px solid rgba(255, 255, 255, .16);
+            background: rgba(255, 255, 255, .06);
+            padding: 8px 10px;
+            border-radius: 999px;
+            color: rgba(255, 255, 255, .60);
+            font-size: .86rem;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .03);
+            white-space: nowrap;
+        }
+
+        .caption .t2 {
+            margin: 0;
+            font-size: clamp(1.05rem, 2.35vw, 1.38rem);
+            line-height: 1.55;
+            text-shadow: 0 0 18px rgba(255, 255, 255, .14);
+        }
+
+        /* ===== SECTION + CAROUSEL ===== */
+        .section {
+            margin-top: 18px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 0 4px;
+        }
+
+        .sectionTitle {
+            margin: 0;
+            color: rgba(255, 255, 255, .84);
+            font-size: 1rem;
+        }
+
+        .sectionHint {
+            margin: 0;
+            color: rgba(255, 255, 255, .55);
+            font-size: .92rem;
+        }
+
+        .carousel {
+            margin-top: 10px;
+            position: relative;
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, .12);
+            background: linear-gradient(180deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, .03));
+            box-shadow: 0 28px 90px rgba(0, 0, 0, .55), 0 0 45px rgba(255, 255, 255, .06);
+        }
+
+        .track {
+            display: flex;
+            gap: 16px;
+            padding: 18px 18px 16px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            perspective: 900px;
+        }
+
+        .track::-webkit-scrollbar {
+            display: none
+        }
+
+        .card {
+            flex: 0 0 min(84vw, 580px);
+            scroll-snap-align: center;
+            border-radius: 22px;
+            border: 1px solid rgba(255, 255, 255, .14);
+            background:
+                radial-gradient(900px 240px at 10% 15%, rgba(255, 255, 255, .14), transparent 55%),
+                linear-gradient(180deg, rgba(0, 0, 0, .20), rgba(0, 0, 0, .35));
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .03), 0 18px 60px rgba(0, 0, 0, .55);
+            padding: 16px 16px 14px;
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            transition: transform .18s ease, border-color .18s ease;
+            user-select: none;
+            cursor: pointer;
+        }
+
+        .card::before {
+            content: "";
             position: absolute;
-            width: 32px;
-            height: 32px;
-            z-index: 9999;
+            inset: -2px;
+            background: radial-gradient(260px 150px at var(--mx, 50%) var(--my, 40%), rgba(255, 255, 255, .22), transparent 60%);
+            opacity: 0;
+            transition: opacity .18s ease;
             pointer-events: none;
-            transition: transform 0.1s ease;
-            filter: drop-shadow(0 0 4px #ffffff);
+        }
+
+        .card:hover::before {
+            opacity: .95;
+        }
+
+        .card:hover {
+            border-color: rgba(255, 255, 255, .22);
+            transform: translateY(-4px) rotateX(1.2deg);
+        }
+
+        .card:active {
+            transform: translateY(-1px) scale(.99);
+        }
+
+        .cardTop {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .cardTop h3 {
+            margin: 0;
+            font-size: 1.02rem;
+            color: rgba(255, 255, 255, .88);
+        }
+
+        .tagMini {
+            border: 1px solid rgba(255, 255, 255, .14);
+            background: rgba(255, 255, 255, .06);
+            padding: 7px 10px;
+            border-radius: 999px;
+            color: rgba(255, 255, 255, .62);
+            font-size: .82rem;
+        }
+
+        .card p {
+            margin: 0;
+            color: rgba(255, 255, 255, .72);
+            line-height: 1.6;
+            font-size: 1.02rem;
+            white-space: pre-wrap;
+            text-shadow: 0 0 14px rgba(255, 255, 255, .10);
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px 14px;
+            border-top: 1px solid rgba(255, 255, 255, .10);
+            background: linear-gradient(180deg, rgba(0, 0, 0, .06), rgba(0, 0, 0, .16));
+        }
+
+        .mid {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            min-width: 180px;
+        }
+
+        .dots {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .20);
+            border: 1px solid rgba(255, 255, 255, .16);
+            transition: transform .15s ease, background .15s ease;
+        }
+
+        .dot.active {
+            background: rgba(255, 255, 255, .72);
+            transform: scale(1.25);
+        }
+
+        .progressWrap {
+            width: min(440px, 70vw);
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid rgba(255, 255, 255, .10);
+            overflow: hidden;
+        }
+
+        .progressBar {
+            height: 100%;
+            width: 0%;
+            background: rgba(255, 255, 255, .60);
+            box-shadow: 0 0 20px rgba(255, 255, 255, .16);
+            transition: width .25s ease;
+        }
+
+        .counter {
+            color: rgba(255, 255, 255, .62);
+            font-size: .9rem;
+        }
+
+        /* ===== MODAL ===== */
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            background: rgba(0, 0, 0, .62);
+            backdrop-filter: blur(12px);
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modalBox {
+            width: min(860px, 96vw);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, .16);
+            background:
+                radial-gradient(900px 260px at 20% 10%, rgba(255, 255, 255, .14), transparent 60%),
+                linear-gradient(180deg, rgba(255, 255, 255, .08), rgba(0, 0, 0, .34));
+            box-shadow: 0 30px 100px rgba(0, 0, 0, .70);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .modalInner {
+            padding: 16px 16px 14px;
+        }
+
+        .modalHead {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, .10);
+        }
+
+        .modalTitle {
+            margin: 0;
+            font-size: 1.06rem;
+            color: rgba(255, 255, 255, .90);
+        }
+
+        .x {
+            width: 40px;
+            height: 40px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, .18);
+            background: rgba(255, 255, 255, .06);
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            user-select: none;
+            transition: transform .15s ease, background .15s ease;
+        }
+
+        .x:hover {
+            background: rgba(255, 255, 255, .09);
+            transform: translateY(-1px);
+        }
+
+        .x:active {
+            transform: translateY(0) scale(.99);
+        }
+
+        .modalBody {
+            padding-top: 12px;
+            color: rgba(255, 255, 255, .76);
+            line-height: 1.75;
+            font-size: 1.08rem;
+            white-space: pre-wrap;
+            text-shadow: 0 0 18px rgba(255, 255, 255, .12);
+            min-height: 8lh;
+        }
+
+        .caret {
+            display: inline-block;
+            width: .6ch;
+            height: 1em;
+            background: rgba(255, 255, 255, .65);
+            margin-left: .2ch;
+            transform: translateY(.15em);
+            animation: blink 1s steps(1) infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0
+            }
+        }
+
+        .shake {
+            animation: shake .35s ease;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translateX(0)
+            }
+
+            20% {
+                transform: translateX(-3px)
+            }
+
+            40% {
+                transform: translateX(3px)
+            }
+
+            60% {
+                transform: translateX(-2px)
+            }
+
+            80% {
+                transform: translateX(2px)
+            }
+
+            100% {
+                transform: translateX(0)
+            }
+        }
+
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 18px;
+            transform: translateX(-50%);
+            z-index: 2100;
+            background: rgba(0, 0, 0, .55);
+            border: 1px solid rgba(255, 255, 255, .18);
+            color: rgba(255, 255, 255, .86);
+            padding: 10px 12px;
+            border-radius: 14px;
+            font-size: .92rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .25s ease, transform .25s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-4px);
+        }
+
+        /* =========================
+       MOBILE RESPONSIVE FIX
+       ========================= */
+        @media (max-width: 640px) {
+
+            /* ocultamos dots y barra, dejamos solo contador */
+            .nav .dots,
+            .nav .progressWrap {
+                display: none !important;
+            }
+
+            .nav .mid {
+                min-width: auto;
+            }
+
+            .wrap {
+                width: 94vw;
+                margin: 14px auto 22px;
+            }
+
+            .hero,
+            .heroInner {
+                border-radius: 18px;
+            }
+
+            /* HERO en modo columna: imagen arriba / audio abajo / caption abajo */
+            .heroInner {
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* audio deja de ser overlay */
+            .audioUI {
+                position: relative;
+                top: auto;
+                left: auto;
+                right: auto;
+                margin: 10px 10px 0;
+                width: auto;
+                max-width: none;
+                gap: 8px;
+                padding: 10px 10px;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .wave {
+                width: 96px;
+                height: 28px;
+                flex: 0 0 auto;
+            }
+
+            input[type="range"] {
+                width: 120px;
+            }
+
+            /* caption deja de ser overlay */
+            .caption {
+                position: relative;
+                left: auto;
+                right: auto;
+                bottom: auto;
+                margin: 10px 10px 12px;
+                border-radius: 16px;
+                padding: 12px 12px 10px;
+            }
+
+            .badge {
+                font-size: .74rem;
+                letter-spacing: .10em;
+            }
+
+            .chip {
+                padding: 7px 9px;
+                font-size: .82rem;
+            }
+
+            .track {
+                padding: 14px 12px 12px;
+                gap: 12px;
+            }
+
+            .card {
+                flex: 0 0 88vw;
+                padding: 14px 14px 12px;
+                border-radius: 18px;
+            }
+
+            .cardTop h3 {
+                font-size: .98rem;
+            }
+
+            .card p {
+                font-size: 1rem;
+                line-height: 1.55;
+            }
+
+            .nav {
+                gap: 10px;
+                padding: 10px 10px 12px;
+            }
+
+            .nav .btn {
+                padding: 10px 10px;
+                border-radius: 14px;
+            }
+
+            /* Modal mobile */
+            .modal {
+                padding: 12px;
+            }
+
+            .modalBox {
+                width: 96vw;
+                max-height: 86vh;
+                border-radius: 18px;
+            }
+
+            .modalInner {
+                padding: 14px 14px 12px;
+            }
+
+            .modalBody {
+                max-height: 62vh;
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
+                font-size: 1.02rem;
+                line-height: 1.65;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .audioUI {
+                gap: 6px;
+                padding: 9px 9px;
+            }
+
+            input[type="range"] {
+                width: 96px;
+            }
+
+            .wave {
+                width: 82px;
+            }
+
+            .caption .t2 {
+                font-size: 1rem;
+            }
+
+            .card {
+                flex: 0 0 92vw;
+            }
         }
     </style>
 </head>
 
 <body>
-    <canvas id="canvas"></canvas>
+    <canvas id="fxBack"></canvas>
+    <canvas id="fxFront"></canvas>
+    <div class="noise"></div>
 
     <!-- 🎵 AUDIO -->
-    <audio id="audio-control" preload="auto" loop>
-        <!-- 🔁 Cambia la ruta si el archivo está en otra carpeta -->
+    <audio id="audio" preload="auto" loop>
         <source src="music.mp3" type="audio/mpeg">
         <source src="music.ogg" type="audio/ogg">
     </audio>
 
-    <div class="overlay">
-        <!-- 🔧 Texto del centro: cámbialo aquí -->
-        <div class="center-message">🤍 ᴹᴬᴵᵀᴱᴰ 🤍</div>
+    <div class="wrap">
+        <div class="hero" id="hero">
+            <div class="heroInner">
+
+                <!-- SOLO imagen + overlays -->
+                <div class="heroMedia" id="heroMedia">
+                    <img src="despedida.png" alt="captura" draggable="false" id="heroImg" />
+                    <canvas id="heroFx"></canvas>
+                    <div class="spotlight" id="spot"></div>
+
+                    <!-- Audio overlay en desktop (en mobile se vuelve relativo por CSS) -->
+                    <div class="audioUI">
+                        <div class="btn" id="toggle">▶ Música</div>
+
+                        <div class="wave" title="waveform">
+                            <canvas id="wave" width="92" height="28"></canvas>
+                        </div>
+
+                        <div class="vol">
+                            <span style="opacity:.75">Vol</span>
+                            <input id="vol" type="range" min="0" max="1" step="0.01" value="0.75" />
+                        </div>
+                    </div>
+
+                    <!-- Caption overlay en desktop (en mobile se vuelve relativo por CSS) -->
+                    <div class="caption">
+                        <div class="badgeRow">
+                            <div class="badge"><span class="pulseDot"></span>un último recuerdo</div>
+                            <div class="chips">
+                                <span class="chip">← →</span>
+                                <span class="chip">toca para abrir</span>
+                            </div>
+                        </div>
+                        <p class="t2">
+                            Siempre serás la niña de mis ojos.
+                            <br>Y aunque hoy me despida… me llevo todos los recuerdos.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="carousel" id="carousel">
+            <div class="track" id="track">
+
+                <div class="card" data-id="1" data-title="📦 Caja 1: Lo que guardo"
+                    data-text="Me quedo con las risas, con lo pequeño, con esos días que se sentían eternos aunque duraran un rato.  No fue perfecto, pero fue real.">
+                    <div class="cardTop">
+                        <h3>📦 Caja 1: Lo que guardo</h3>
+                        <span class="tagMini">Recuerdo</span>
+                    </div>
+                    <p>Me quedo con las risas, con lo pequeño…</p>
+                </div>
+
+                <div class="card" data-id="2" data-title="📦 Caja 2: Lo que agradezco"
+                    data-text="Gracias por existir en mi historia. Por enseñarme cosas sin darte cuenta. Por dejar una luz donde antes no había.  Hay personas que no se quedan, pero cambian el lugar.">
+                    <div class="cardTop">
+                        <h3>📦 Caja 2: Lo que agradezco</h3>
+                        <span class="tagMini">Gratitud</span>
+                    </div>
+                    <p>Gracias por existir en mi historia…</p>
+                </div>
+
+                <div class="card" data-id="3" data-title="📦 Caja 3: Lo que suelto"
+                    data-text="Suelto lo que dolía: las vueltas, las dudas, los “y si…”, lo que no se pudo.  No te culpo. No me culpo. Solo suelto.">
+                    <div class="cardTop">
+                        <h3>📦 Caja 3: Lo que suelto</h3>
+                        <span class="tagMini">Cierre</span>
+                    </div>
+                    <p>Suelto lo que dolía: las vueltas, las dudas…</p>
+                </div>
+
+                <div class="card" data-id="4" data-title="📦 Caja 4: La despedida"
+                    data-text="Siempre serás la niña de mis ojos.  Te amaré, me llevaré todos los recuerdos, y al final pude hacer lo que pediste: te superé.  Esto lo hago por si algún día lo ves, para dejar mis últimas palabras aquí, plasmadas.">
+                    <div class="cardTop">
+                        <h3>📦 Caja 4: La despedida</h3>
+                        <span class="tagMini">Final</span>
+                    </div>
+                    <p>Siempre serás la niña de mis ojos…</p>
+                </div>
+
+            </div>
+
+            <div class="nav">
+                <div class="btn" id="prev">← <span style="opacity:.75">Atrás</span></div>
+
+                <div class="mid">
+                    <div class="dots" id="dots"></div>
+                    <div class="progressWrap">
+                        <div class="progressBar" id="bar"></div>
+                    </div>
+                    <div class="counter" id="counter">1 / 4</div>
+                </div>
+
+                <div class="btn" id="next"><span style="opacity:.75">Siguiente</span> →</div>
+            </div>
+        </div>
     </div>
 
-    <img id="cursor" class="heart-cursor"
-        src="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjZmZmZmZmIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiI+PHBhdGggZD0iTTQ3LjYgMjVDMjUuMSAyNSA3IDQzLjEgNyA2NS42QzcuMDIgODguMTUgMjQuMyAxMjcgOTMuNSAxNTcuNUMxNjIuNyAxODggMjM5LjggMjIxLjYgMjU1IDMxMi41QzI3MC4yIDIyMS42IDM0Ny4zIDE4OCA0MTYuNSAxNTcuNUM0ODUuNyAxMjcgNTAzIDg4LjEgNTAzIDY1LjZDNDk3LjYgNDMuMSA0NzkuNSA1IDI3My4yIDUuQzIzNS44IDUuMDEgMTk4LjUgNDMuMSAxOTguNSA4My44QzE5OC41IDY1LjYgMTgwLjQgNDcgMTU3LjkgNDdDMTM1LjQgNDcgMTE3LjMgNjUuNiAxMTcuMyA4My44QzExNy4zIDQzLjEgODAgNS4wMSA0Ny42IDI1WiIvPjwvc3ZnPg=="
-        alt="heart">
+    <!-- MODAL -->
+    <div class="modal" id="modal" aria-hidden="true">
+        <div class="modalBox" role="dialog" aria-modal="true" id="modalBox">
+            <div class="modalInner">
+                <div class="modalHead">
+                    <h3 class="modalTitle" id="modalTitle">Caja</h3>
+                    <div class="x" id="close" title="Cerrar">✕</div>
+                </div>
+                <div class="modalBody" id="modalBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
 
     <script>
-        const isTouchDevice = 'ontouchstart' in window ||
-            navigator.maxTouchPoints > 0 ||
-            navigator.msMaxTouchPoints > 0;
+        // ==========================
+        // 0) Bloqueo arrastre / click derecho en imágenes
+        // ==========================
+        document.querySelectorAll('img').forEach(img => {
+            img.addEventListener('dragstart', e => e.preventDefault());
+            img.addEventListener('contextmenu', e => e.preventDefault());
+        });
 
-        // ===== AUDIO robusto (arranca en el primer gesto) =====
-        const audio = document.getElementById('audio-control');
+        // ==========================
+        // 1) AUDIO + ANALYZER (waveform) + pulso
+        // ==========================
+        const audio = document.getElementById('audio');
+        const btnToggle = document.getElementById('toggle');
+        const vol = document.getElementById('vol');
+
+        const waveCanvas = document.getElementById('wave');
+        const wctx = waveCanvas.getContext('2d');
+
+        let audioCtx = null;
+        let analyser = null;
+        let data = null;
+        let sourceNode = null;
+        let analyserReady = false;
+
+        audio.volume = Number(vol.value);
+
+        function updateBtn() {
+            btnToggle.textContent = audio.paused ? "▶ Música" : "⏸ Pausa";
+        }
+
+        function setupAnalyserIfNeeded() {
+            if (analyserReady) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 256;
+            data = new Uint8Array(analyser.frequencyBinCount);
+
+            sourceNode = audioCtx.createMediaElementSource(audio);
+            sourceNode.connect(analyser);
+            analyser.connect(audioCtx.destination);
+            analyserReady = true;
+        }
+
+        async function tryPlay() {
+            try {
+                setupAnalyserIfNeeded();
+                if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
+                audio.volume = Number(vol.value);
+                await audio.play();
+                updateBtn();
+                toast("🎵 Música activada");
+            } catch (e) {
+                console.log("[AUDIO] bloqueado:", e);
+            }
+        }
+
+        btnToggle.addEventListener('click', async () => {
+            if (audio.paused) await tryPlay();
+            else { audio.pause(); updateBtn(); toast("🔇 Pausa"); }
+        });
+
+        vol.addEventListener('input', () => audio.volume = Number(vol.value));
 
         function startMusicOnce() {
-            try {
-                // Forzamos condiciones comunes que desbloquean en móviles
-                audio.currentTime = 0;
-                audio.volume = 0.8;
-                const p = audio.play();
-                if (p && p.catch) {
-                    p.catch(err => console.log('[AUDIO] play() bloqueado:', err));
-                }
-            } catch (e) {
-                console.log('[AUDIO] error:', e);
-            }
-            // Quitamos todos los listeners tras el primer intento
+            tryPlay();
             ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(ev =>
                 window.removeEventListener(ev, startMusicOnce, true)
             );
         }
-
-        // Capturamos varios gestos y usamos capture+once para que cuente como user gesture
         ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(ev =>
             window.addEventListener(ev, startMusicOnce, { capture: true, once: true, passive: true })
         );
 
-        // Logs útiles
-        audio.addEventListener('loadeddata', () => console.log('[AUDIO] loadeddata'));
-        audio.addEventListener('canplay', () => console.log('[AUDIO] canplay'));
-        audio.addEventListener('play', () => console.log('[AUDIO] play'));
-        audio.addEventListener('error', () => console.log('[AUDIO] error src=', audio.currentSrc));
+        function drawWave() {
+            wctx.clearRect(0, 0, waveCanvas.width, waveCanvas.height);
+            wctx.fillStyle = "rgba(255,255,255,.05)";
+            wctx.fillRect(0, 0, waveCanvas.width, waveCanvas.height);
 
-        // Reintento al volver a la pestaña (Safari a veces pausa)
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && audio.paused) {
-                startMusicOnce();
+            let level = 0;
+
+            if (analyserReady && analyser) {
+                analyser.getByteFrequencyData(data);
+                let sum = 0;
+                for (let i = 0; i < data.length; i++) sum += data[i];
+                level = (sum / data.length) / 255;
+
+                const bars = 22;
+                const bw = waveCanvas.width / bars;
+                for (let i = 0; i < bars; i++) {
+                    const idx = Math.floor((i / bars) * data.length);
+                    const v = data[idx] / 255;
+                    const h = Math.max(2, v * waveCanvas.height);
+                    const x = i * bw + 1;
+                    const y = (waveCanvas.height - h) / 2;
+
+                    wctx.fillStyle = "rgba(255,255,255,.70)";
+                    wctx.fillRect(x, y, Math.max(2, bw - 2), h);
+                }
+            } else {
+                const t = Date.now() / 300;
+                const bars = 18;
+                const bw = waveCanvas.width / bars;
+                for (let i = 0; i < bars; i++) {
+                    const v = (Math.sin(t + i * 0.7) * 0.5 + 0.5);
+                    const h = 4 + v * (waveCanvas.height - 6);
+                    const x = i * bw + 1;
+                    const y = (waveCanvas.height - h) / 2;
+                    wctx.fillStyle = "rgba(255,255,255,.35)";
+                    wctx.fillRect(x, y, Math.max(2, bw - 2), h);
+                }
+                level = 0;
             }
+
+            document.documentElement.style.setProperty('--music', String(level));
+            requestAnimationFrame(drawWave);
+        }
+        drawWave();
+
+        // ==========================
+        // 2) Spotlight en el hero (solo sobre la imagen)
+        // ==========================
+        const heroMedia = document.getElementById('heroMedia');
+        const spot = document.getElementById('spot');
+
+        function setSpot(x, y) {
+            const r = heroMedia.getBoundingClientRect();
+            const sx = ((x - r.left) / r.width) * 100;
+            const sy = ((y - r.top) / r.height) * 100;
+            spot.style.setProperty('--sx', sx + '%');
+            spot.style.setProperty('--sy', sy + '%');
+        }
+        heroMedia.addEventListener('mousemove', (e) => setSpot(e.clientX, e.clientY));
+        heroMedia.addEventListener('touchmove', (e) => {
+            const t = e.touches && e.touches[0];
+            if (t) setSpot(t.clientX, t.clientY);
+        }, { passive: true });
+
+        // ==========================
+        // 3) Carrusel
+        // ==========================
+        const track = document.getElementById('track');
+        const cards = Array.from(track.querySelectorAll('.card'));
+        const dotsWrap = document.getElementById('dots');
+        const bar = document.getElementById('bar');
+        const counter = document.getElementById('counter');
+
+        const dots = cards.map((_, i) => {
+            const d = document.createElement('div');
+            d.className = 'dot' + (i === 0 ? ' active' : '');
+            d.addEventListener('click', () => scrollToIndex(i));
+            dotsWrap.appendChild(d);
+            return d;
         });
 
-        // ===== ANIMACIÓN =====
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const cursor = document.getElementById('cursor');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        if (isTouchDevice) {
-            cursor.style.display = 'none';
-        } else {
-            document.addEventListener('mousemove', (e) => {
-                cursor.style.left = `${e.clientX - 16}px`;
-                cursor.style.top = `${e.clientY - 16}px`;
-                cursor.style.transform = `scale(${1 + Math.sin(Date.now() / 300) * 0.05})`;
-            });
-            document.addEventListener('mousedown', () => { cursor.style.transform = 'scale(0.8)'; });
-            document.addEventListener('mouseup', () => {
-                cursor.style.transform = 'scale(1.1)';
-                setTimeout(() => { cursor.style.transform = 'scale(1)'; }, 100);
-            });
+        function getStep() {
+            const style = getComputedStyle(track);
+            const gap = parseFloat(style.columnGap || style.gap || "16") || 16;
+            return cards[0].getBoundingClientRect().width + gap;
         }
 
-        // 🔧 Texto de la lluvia (cámbialo si quieres)
-        const text = "TE AMO";
-        const baseFontSize = isTouchDevice ? 36 : 64;
-        let columns = Math.floor(canvas.width / (baseFontSize * 1.5));
-        let drops = new Array(columns).fill(1);
+        function currentIndex() {
+            const w = getStep();
+            return Math.max(0, Math.min(cards.length - 1, Math.round(track.scrollLeft / w)));
+        }
 
-        ctx.font = `bold ${baseFontSize}px monospace`;
+        function setUI(i) {
+            dots.forEach((d, idx) => d.classList.toggle('active', idx === i));
+            bar.style.width = (((i + 1) / cards.length) * 100) + '%';
+            counter.textContent = `${i + 1} / ${cards.length}`;
+        }
 
-        function drawMatrix() {
-            ctx.fillStyle = "rgba(0,0,0,0.05)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function scrollToIndex(i) {
+            track.scrollTo({ left: i * getStep(), behavior: 'smooth' });
+            setUI(i);
+        }
 
-            ctx.fillStyle = "#ffffff";
-            for (let i = 0; i < drops.length; i++) {
-                const x = i * baseFontSize * 1.5;
-                const y = drops[i] * baseFontSize;
+        document.getElementById('prev').addEventListener('click', () => scrollToIndex(Math.max(0, currentIndex() - 1)));
+        document.getElementById('next').addEventListener('click', () => scrollToIndex(Math.min(cards.length - 1, currentIndex() + 1)));
 
-                ctx.shadowColor = "rgba(255,255,255,0.7)";
-                ctx.shadowBlur = 15;
-                ctx.fillText(text, x, y);
+        let raf = null;
+        track.addEventListener('scroll', () => {
+            if (raf) cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(() => setUI(currentIndex()));
+        }, { passive: true });
 
-                ctx.shadowBlur = 0;
-                ctx.strokeStyle = "rgba(255,255,255,0.3)";
-                ctx.lineWidth = 2;
-                ctx.strokeText(text, x, y);
-                ctx.fillText(text, x, y);
-
-                if (y > canvas.height && Math.random() > 0.992) drops[i] = 0;
-                drops[i] += 0.3;
+        track.addEventListener('wheel', (e) => {
+            if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                track.scrollLeft += e.deltaY;
+                e.preventDefault();
             }
+        }, { passive: false });
+
+        // ==========================
+        // 4) Modal + typewriter + corazones en modal
+        // ==========================
+        const modal = document.getElementById('modal');
+        const modalBox = document.getElementById('modalBox');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        const closeBtn = document.getElementById('close');
+        const carousel = document.getElementById('carousel');
+
+        let typeTimer = null;
+        function typeText(full) {
+            clearTimeout(typeTimer);
+            modalBody.textContent = "";
+            let i = 0;
+            const caret = document.createElement('span');
+            caret.className = 'caret';
+            modalBody.appendChild(caret);
+
+            const tick = () => {
+                caret.insertAdjacentText('beforebegin', full[i] || "");
+                i++;
+                if (i <= full.length) typeTimer = setTimeout(tick, 12);
+                else caret.remove();
+            };
+            tick();
         }
 
-        // Corazones blancos flotando
-        let hearts = [];
-        function createHeart() {
-            hearts.push({
-                x: Math.random() * canvas.width,
-                y: canvas.height + 20,
-                size: 24 + Math.random() * 20,
-                speed: 1 + Math.random() * 1.5,
-                opacity: 0.5 + Math.random() * 0.5
-            });
-        }
-        function drawHearts() {
-            hearts.forEach((h, index) => {
-                ctx.globalAlpha = h.opacity;
-                ctx.font = `${h.size}px monospace`;
-                ctx.fillStyle = '#ffffff';
-                ctx.fillText("❤", h.x, h.y);
-                h.y -= h.speed;
-                if (h.y < -50) hearts.splice(index, 1);
-            });
-            ctx.globalAlpha = 1;
+        function showModal(title, text) {
+            modalTitle.textContent = title;
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden', 'false');
+            typeText(text);
+            toast('📦 Caja abierta');
+            burstAtModalFront();
+            shakeCarousel();
         }
 
-        // Partículas blancas al tap
-        let particles = [];
-        function createParticles(x, y) {
-            for (let i = 0; i < 16; i++) {
-                particles.push({
-                    x, y,
-                    vx: (Math.random() - 0.5) * 6,
-                    vy: (Math.random() - 0.5) * 6,
-                    alpha: 1,
-                    size: baseFontSize + Math.random() * 30,
-                    color: '#ffffff'
+        function hideModal() {
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+            clearTimeout(typeTimer);
+        }
+
+        closeBtn.addEventListener('click', hideModal);
+        modal.addEventListener('click', (e) => { if (e.target === modal) hideModal(); });
+
+        cards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const r = card.getBoundingClientRect();
+                card.style.setProperty('--mx', (((e.clientX - r.left) / r.width) * 100) + '%');
+                card.style.setProperty('--my', (((e.clientY - r.top) / r.height) * 100) + '%');
+            });
+            card.addEventListener('click', () => showModal(card.dataset.title || "Caja", card.dataset.text || ""));
+        });
+
+        // ==========================
+        // 5) Toast + Shake
+        // ==========================
+        const toastEl = document.getElementById('toast');
+        let toastTimer = null;
+        function toast(msg) {
+            clearTimeout(toastTimer);
+            toastEl.textContent = msg;
+            toastEl.classList.add('show');
+            toastTimer = setTimeout(() => toastEl.classList.remove('show'), 1350);
+        }
+        function shakeCarousel() {
+            carousel.classList.remove('shake');
+            void carousel.offsetWidth;
+            carousel.classList.add('shake');
+        }
+
+        // ==========================
+        // 6) FX BACK + FRONT
+        // ==========================
+        const fxBack = document.getElementById('fxBack');
+        const bctx = fxBack.getContext('2d');
+
+        const fxFront = document.getElementById('fxFront');
+        const fctx = fxFront.getContext('2d');
+
+        let W = 0, H = 0;
+        let ambient = [];
+        let bursts = [];
+        let mouse = { x: 0.5, y: 0.5, active: false };
+
+        const rand = (a, b) => a + Math.random() * (b - a);
+
+        function resizeFx() {
+            W = fxBack.width = fxFront.width = innerWidth;
+            H = fxBack.height = fxFront.height = innerHeight;
+        }
+        addEventListener('resize', resizeFx);
+        resizeFx();
+
+        function drawHeart(ctx, x, y, size, alpha, color) {
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.translate(x, y);
+            ctx.scale(size / 18, size / 18);
+            ctx.beginPath();
+            ctx.moveTo(0, 6);
+            ctx.bezierCurveTo(0, 0, -10, 0, -10, 6);
+            ctx.bezierCurveTo(-10, 12, 0, 16, 0, 20);
+            ctx.bezierCurveTo(0, 16, 10, 12, 10, 6);
+            ctx.bezierCurveTo(10, 0, 0, 0, 0, 6);
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.shadowColor = (color === "#000") ? "rgba(0,0,0,.35)" : "rgba(255,255,255,.35)";
+            ctx.shadowBlur = 18;
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function spawnAmbient(n = 95) {
+            ambient = [];
+            for (let i = 0; i < n; i++) {
+                ambient.push({
+                    x: Math.random() * W,
+                    y: Math.random() * H,
+                    vx: rand(-0.18, 0.18),
+                    vy: rand(-0.12, 0.12),
+                    r: rand(1.2, 2.8),
+                    a: rand(0.10, 0.45),
+                    kind: Math.random() < 0.18 ? 'heart' : 'dot',
+                    w: rand(0.006, 0.02)
                 });
             }
         }
-        function drawParticles() {
-            particles.forEach((p, idx) => {
-                ctx.globalAlpha = p.alpha;
-                ctx.font = `bold ${p.size}px monospace`;
-                ctx.fillStyle = p.color;
-                ctx.shadowColor = p.color;
-                ctx.shadowBlur = 20;
-                ctx.fillText("❤", p.x, p.y);
-                ctx.shadowBlur = 0;
-                p.x += p.vx; p.y += p.vy;
-                p.alpha -= 0.02;
-                if (p.alpha <= 0) particles.splice(idx, 1);
-            });
-            ctx.globalAlpha = 1;
+        spawnAmbient();
+
+        function burstFront(x, y, count = 28) {
+            for (let i = 0; i < count; i++) {
+                bursts.push({
+                    x, y,
+                    vx: rand(-2.6, 2.6),
+                    vy: rand(-2.6, 2.6),
+                    r: rand(1.2, 3.6),
+                    life: rand(0.55, 1.1),
+                    kind: Math.random() < 0.35 ? 'heart' : 'spark'
+                });
+            }
         }
 
-        // Tap / click → partículas
-        const tapEvent = isTouchDevice ? 'touchstart' : 'click';
-        canvas.addEventListener(tapEvent, e => {
-            const x = isTouchDevice ? e.touches[0].clientX : e.clientX;
-            const y = isTouchDevice ? e.touches[0].clientY : e.clientY;
-            createParticles(x, y);
+        function burstAtModalFront() {
+            const box = document.querySelector('.modalBox');
+            if (!box) { burstFront(W * 0.5, H * 0.58, 46); return; }
+            const r = box.getBoundingClientRect();
+            burstFront(r.left + r.width / 2, r.top + r.height / 2, 46);
+        }
+
+        function tickBack() {
+            bctx.clearRect(0, 0, W, H);
+
+            if (mouse.active) {
+                const gx = mouse.x * W, gy = mouse.y * H;
+                const g = bctx.createRadialGradient(gx, gy, 0, gx, gy, 240);
+                g.addColorStop(0, "rgba(255,255,255,.10)");
+                g.addColorStop(1, "rgba(255,255,255,0)");
+                bctx.fillStyle = g;
+                bctx.fillRect(0, 0, W, H);
+            }
+
+            for (const p of ambient) {
+                if (mouse.active) {
+                    const mx = mouse.x * W, my = mouse.y * H;
+                    const dx = mx - p.x, dy = my - p.y;
+                    const d = Math.hypot(dx, dy) || 1;
+                    if (d < 220) {
+                        p.vx += (dx / d) * 0.008;
+                        p.vy += (dy / d) * 0.008;
+                    }
+                }
+
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < -30) p.x = W + 30;
+                if (p.x > W + 30) p.x = -30;
+                if (p.y < -30) p.y = H + 30;
+                if (p.y > H + 30) p.y = -30;
+
+                p.a += (Math.random() - 0.5) * p.w;
+                p.a = Math.max(0.06, Math.min(0.55, p.a));
+
+                if (p.kind === 'heart') {
+                    drawHeart(bctx, p.x, p.y, p.r * 8, p.a, "#fff");
+                } else {
+                    bctx.beginPath();
+                    bctx.globalAlpha = p.a;
+                    bctx.fillStyle = "#fff";
+                    bctx.shadowColor = "rgba(255,255,255,.20)";
+                    bctx.shadowBlur = 10;
+                    bctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    bctx.fill();
+                    bctx.globalAlpha = 1;
+                    bctx.shadowBlur = 0;
+                }
+            }
+            requestAnimationFrame(tickBack);
+        }
+        tickBack();
+
+        function tickFront() {
+            fctx.clearRect(0, 0, W, H);
+
+            for (let i = 0; i < bursts.length; i++) {
+                const p = bursts[i];
+                p.x += p.vx; p.y += p.vy;
+                p.vx *= 0.98; p.vy *= 0.98;
+                p.life -= 0.018;
+
+                if (p.kind === 'heart') {
+                    drawHeart(fctx, p.x, p.y, p.r * 9, Math.max(0, p.life), "#fff");
+                } else {
+                    fctx.beginPath();
+                    fctx.globalAlpha = Math.max(0, p.life);
+                    fctx.fillStyle = "#fff";
+                    fctx.shadowColor = "rgba(255,255,255,.35)";
+                    fctx.shadowBlur = 18;
+                    fctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    fctx.fill();
+                    fctx.globalAlpha = 1;
+                    fctx.shadowBlur = 0;
+                }
+
+                if (p.life <= 0) {
+                    bursts.splice(i, 1);
+                    i--;
+                }
+            }
+            requestAnimationFrame(tickFront);
+        }
+        tickFront();
+
+        window.addEventListener('pointermove', (e) => {
+            mouse.x = e.clientX / innerWidth;
+            mouse.y = e.clientY / innerHeight;
+            mouse.active = true;
         }, { passive: true });
 
-        // Bucle
-        function animate() {
-            drawMatrix();
-            drawParticles();
-            drawHearts();
-            if (Math.random() > 0.95) createHeart();
-            requestAnimationFrame(animate);
-        }
-        animate();
+        window.addEventListener('pointerleave', () => mouse.active = false, { passive: true });
+        window.addEventListener('pointerdown', (e) => { burstFront(e.clientX, e.clientY, 16); }, { passive: true });
 
-        // Responsive
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            columns = Math.floor(canvas.width / (baseFontSize * 1.5));
-            drops = new Array(columns).fill(1);
-            ctx.font = `bold ${baseFontSize}px monospace`;
-        });
+        // clicks en modal
+        modal.addEventListener('pointerdown', (e) => burstFront(e.clientX, e.clientY, 22), { passive: true });
+        modalBox.addEventListener('pointerdown', (e) => burstFront(e.clientX, e.clientY, 18), { passive: true });
+
+        // ==========================
+        // 7) Corazones negros SOLO sobre la imagen (heroFx)
+        // ==========================
+        const heroFx = document.getElementById('heroFx');
+        const heroImg = document.getElementById('heroImg');
+        const hctx = heroFx.getContext('2d');
+        let HW = 0, HH = 0;
+        let heroBursts = [];
+
+        function resizeHeroFx() {
+            const r = heroImg.getBoundingClientRect();
+            if (!r.width || !r.height) {
+                requestAnimationFrame(resizeHeroFx);
+                return;
+            }
+
+            const dpr = window.devicePixelRatio || 1;
+            heroFx.width = Math.floor(r.width * dpr);
+            heroFx.height = Math.floor(r.height * dpr);
+            heroFx.style.width = r.width + "px";
+            heroFx.style.height = r.height + "px";
+            hctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            HW = r.width;
+            HH = r.height;
+
+            // repaint helper mobile
+            heroFx.style.transform = 'translateZ(0)';
+        }
+
+        window.addEventListener('resize', resizeHeroFx);
+        window.addEventListener('orientationchange', () => setTimeout(resizeHeroFx, 140));
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => setTimeout(resizeHeroFx, 80));
+        }
+        heroImg.addEventListener('load', () => setTimeout(resizeHeroFx, 60));
+        window.addEventListener('load', () => setTimeout(resizeHeroFx, 120));
+
+        if (heroImg.complete) setTimeout(resizeHeroFx, 60);
+
+        function heroBurst(x, y, count = 18) {
+            for (let i = 0; i < count; i++) {
+                heroBursts.push({
+                    x, y,
+                    vx: rand(-2.0, 2.0),
+                    vy: rand(-2.0, 2.0),
+                    r: rand(1.2, 3.2),
+                    life: rand(0.50, 0.95),
+                    kind: (Math.random() < 0.55) ? 'heart' : 'spark'
+                });
+            }
+        }
+
+        heroMedia.addEventListener('pointerdown', (e) => {
+            const r = heroImg.getBoundingClientRect();
+            const inside = (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom);
+            if (!inside) return;
+            heroBurst(e.clientX - r.left, e.clientY - r.top, 22);
+        }, { passive: true });
+
+        function tickHeroFx() {
+            if (!HW || !HH) { requestAnimationFrame(tickHeroFx); return; }
+            hctx.clearRect(0, 0, HW, HH);
+
+            for (let i = 0; i < heroBursts.length; i++) {
+                const p = heroBursts[i];
+                p.x += p.vx; p.y += p.vy;
+                p.vx *= 0.985; p.vy *= 0.985;
+                p.life -= 0.020;
+
+                const a = Math.max(0, p.life);
+
+                if (p.kind === 'heart') {
+                    drawHeart(hctx, p.x, p.y, p.r * 9, a, "#000");
+                } else {
+                    hctx.beginPath();
+                    hctx.globalAlpha = a;
+                    hctx.fillStyle = "#000";
+                    hctx.shadowColor = "rgba(0,0,0,.35)";
+                    hctx.shadowBlur = 14;
+                    hctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    hctx.fill();
+                    hctx.globalAlpha = 1;
+                    hctx.shadowBlur = 0;
+                }
+
+                if (p.life <= 0) {
+                    heroBursts.splice(i, 1);
+                    i--;
+                }
+            }
+            requestAnimationFrame(tickHeroFx);
+        }
+        tickHeroFx();
+
+        // init
+        setUI(0);
+        updateBtn();
     </script>
 </body>
 
